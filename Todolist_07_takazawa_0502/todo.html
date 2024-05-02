@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODOリスト</title>
+    <style>
+        #main {
+            color: aliceblue;
+            display: flex;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+
+        div {
+            background-color: black;
+            margin: 5px;
+            width: 300px;
+            position: relative;
+        }
+
+        .new {
+            border: 5px solid yellow;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            color: red;
+            background-color: white;
+            border: 5px solid;
+        }
+
+        div:not(.modified) {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>TODOリスト</h1>
+    <button id="add">追加</button>
+    <button id="save">保存</button>
+    <button id="clear">全削除</button>
+
+    <main id="main">
+
+    </main>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js">
+    </script>
+
+    <script>
+        let c = 0; // c をグローバルスコープで初期化
+
+        $("#add").on("click", function () {
+            $("#main>div").removeClass("new"); // 既存のdivからは `new` クラスを削除
+            c++;
+            const html = `<div class="new modified">${c}<textarea id="add_${c}" class="memo"></textarea><button class="delete-btn">◻️完了</button></div>`; // HTML要素を1つだけ定義
+            $("#main").append(html);
+        });
+
+        $("#main").on("input", ".memo", function () {
+            $(this).parent().addClass("modified");
+        });
+
+        $("#main").on("click", ".delete-btn", function () {
+            $(this).parent().remove();
+        });
+
+        $("#save").on("click", function () {
+            const memos = $(".memo");
+            let ary = [];
+            memos.each(function (index, elem) {
+                ary.push($(elem).val());
+            });
+            localStorage.setItem("card", JSON.stringify(ary));
+        });
+
+        $("#clear").on("click", function () {
+            localStorage.clear();
+            $("#main").empty();
+            c = 0;
+        });
+
+        $("#showModified").on("click", function () {
+            $("div").hide();  // すべてのdivを非表示に
+            $(".modified").show();  // modifiedクラスを持つdivだけ表示
+        });
+
+        window.onload = function () {
+            const ary = JSON.parse(localStorage.getItem("card"));
+            if (ary) {
+                ary.forEach((value, index) => {
+                    const html = `<div class="modified">${index + 1}<textarea id="add_${index + 1}" class="memo">${value}</textarea><button class="delete-btn">削除</button></div>`;
+                    $("#main").append(html);
+                    c = index + 1;
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
